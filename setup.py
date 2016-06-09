@@ -1,4 +1,5 @@
-from setuptools import setup, find_packages
+# from setuptools import setup, find_packages
+from distutils.core import setup
 
 setup (
     name = "pycog3",
@@ -7,9 +8,10 @@ setup (
     description = "Command library for the Cog ChatOps platform for Python3",
     author = "Kevin Smith",
     author_email = "kevin@operable.io",
-    url = "http://operable.io",
-    packages = find_packages(),
-    install_requires = ["requests>=2.10", "PyYAML>=3.11"],
+    url = "https://github.com/cog-bundles/pycog3",
+    download_url = "https://github.com/cog-bundles/pycog3/tarball/0.1.25",
+    packages = ["pycog3"],
+    requires = ["requests (>=2.10)", "PyYAML (>=3.11)"],
     keywords = ["bot", "devops", "chatops", "automation"],
     classifiers = [
         "Programming Language :: Python :: 3",
