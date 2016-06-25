@@ -6,6 +6,7 @@ class Response(object):
         self.template_ = None
         self.content_ = None
         self.message_ = None
+        self.log_msgs_ = []
 
     def string(self, message):
         self.message_ = message
@@ -17,23 +18,24 @@ class Response(object):
         return self
 
     def send(self):
-        if self.template_ is not None:
-            self.write_("COG_TEMPLATE: %s" % (self.template_))
-        if self.content_ is not None:
-            self.write_json_()
-        else:
-            self.write_string_()
-
-    def write_string_(self):
-        self.write_(json.dumps(self.message_))
-
-    def write_json_(self):
-        encoded = json.dumps(self.content_)
-        self.write_("\n".join(["JSON", encoded]))
+        try:
+            for lm in self.log_msgs_:
+                self.write_(lm)
+            if self.template_ is not None:
+                self.write_("COG_TEMPLATE: %s" % (self.template_))
+            if self.content_ is not None:
+                self.write_("JSON")
+            # Write empty line to separate "headers" from content
+            self.write_("")
+            if self.content_ is not None:
+                self.write_(self.content_)
+            else:
+                self.write_(self.message_)
+        finally:
+            stdout.flush()
 
     def write_(self, message):
         print(message)
-        stdout.flush()
 
     def debug(self, message):
         self.log_("debug", message)
@@ -48,4 +50,4 @@ class Response(object):
         self.log_("error", message)
 
     def log_(self, level, message):
-        print("COGCMD_%s: %s" % (level.upper(), message))
+        self.log_msgs_.append("COGCMD_%s: %s" % (level.upper(), message))
