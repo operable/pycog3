@@ -6,6 +6,10 @@ class Response(object):
         self.template_ = None
         self.content_ = None
         self.message_ = None
+        self.aborted_ = False
+
+    def abort(self):
+        self.aborted_ = True
 
     def string(self, message):
         self.message_ = message
@@ -17,12 +21,15 @@ class Response(object):
         return self
 
     def send(self):
+        if self.aborted_:
+            self.write_("COGCMD_ACTION: abort")
         if self.template_ is not None:
             self.write_("COG_TEMPLATE: %s" % (self.template_))
         if self.content_ is not None:
             self.write_json_()
         else:
-            self.write_string_()
+            if self.message_ is not None:
+                self.write_string_()
 
     def write_string_(self):
         self.write_(json.dumps(self.message_))
