@@ -25,7 +25,20 @@ class Request(object):
         names = names.split(",")
         self.options = {}
         for name in names:
-            self.options[name] = self.getenv_(option_name_to_var(name))
+            name = name.upper()
+            # Options that have a list value will have a
+            # COG_OPT_<NAME>_COUNT environment variable set,
+            # indicating how many values there are. Scalar values will
+            # have no such environment variable
+            count = self.getenv_("COG_OPT_%s_COUNT" % name)
+            if count is None:
+                self.options[name] = self.getenv_("COG_OPT_%s" % name)
+            else:
+                count = int(count)
+                values = []
+                for i in range(count):
+                    values.append(self.getenv_("COG_OPT_%s_%d" % (name, i)))
+                self.options[name] = values
 
     def populate_args_(self):
         arg_count = int(self.getenv_("COG_ARGC", "0"))
@@ -34,16 +47,9 @@ class Request(object):
             return
         self.args = []
         for i in range(arg_count):
-            self.args.append(self.getenv_(arg_index_to_var(i)))
+            self.args.append(self.getenv_("COG_ARGV_%d" % i))
 
     def get_optional_option(self, name):
         if name in self.options.keys():
             return self.options[name]
         return None
-
-def option_name_to_var(name):
-    return "COG_OPT_%s" % (name.upper())
-
-def arg_index_to_var(index):
-    return "COG_ARGV_" + str(index)
-
