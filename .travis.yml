@@ -1,0 +1,25 @@
+# encrypt the travis password / token using:
+# travis encrypt --add deploy.password
+#deploy:
+#  provider: pypi
+#  user: "Your username"
+#  password:
+#    secure: "Your encrypted password"
+# on:
+#    tags: true
+
+language: python
+
+python:
+  - 3.5
+  - 3.6
+  - nightly
+
+env:
+  - PYTHONPATH=tests/testbundle
+
+install:
+  - pip3 install .
+
+script:
+  - python -m unittest discover -v tests/

@@ -2,13 +2,36 @@
 
 import importlib
 import os
+import sys
+
+
+def fail(message):
+    print("%s" % (message), file=sys.stderr)
+    sys.stdout.flush()
+    sys.stderr.flush()
+    sys.exit(1)
 
 bundle_name = os.getenv("COG_BUNDLE")
-command_name = os.getenv("COG_COMMAND")
-class_name = command_name.capitalize()
-full_path = "%s.commands.%s" % (bundle_name, command_name)
 
-bundle_module = importlib.import_module(full_path)
+command_name = os.getenv("COG_COMMAND")
+
+try:
+    path = command_name.replace("-", ".")
+except AttributeError as e:
+     fail("ERROR: COG_COMMAND env var is not set")
+
+full_path = "%s.commands.%s" % (bundle_name, path)
+class_name = command_name.split("-")[-1].capitalize()
+
+
+try:
+    bundle_module = importlib.import_module(full_path)
+except ImportError as e:
+    if len(command_name)==0:
+        fail("ERROR: COG_COMMAND env var is set but empty")
+    else:
+        fail('ERROR: Unable to import module "' + str(full_path) + '"')
+
 klass = getattr(bundle_module, class_name)
 cmd = klass()
 cmd.execute()
